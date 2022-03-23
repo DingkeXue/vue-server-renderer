@@ -6,3 +6,10 @@ This package offers Node.js server-side rendering for Vue 2.0.
 
 - [API Reference](https://ssr.vuejs.org/en/api.html)
 - [Vue.js Server-Side Rendering Guide](https://ssr.vuejs.org)
+
+## Dev
+1. 打断点
+2. 进行调试
+```
+npm run debug
+```
