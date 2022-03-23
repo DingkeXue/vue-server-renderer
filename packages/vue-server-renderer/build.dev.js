@@ -8244,11 +8244,16 @@ var onCompilationError = function (err, vm) {
   throw new Error(("\n\u001b[31m" + err + trace + "\u001b[39m\n"))
 };
 
+/**
+ * 标准化render函数
+ * @param {Component} vm 组件实例
+ */
 var normalizeRender = function (vm) {
   var ref = vm.$options;
   var render = ref.render;
   var template = ref.template;
   var _scopeId = ref._scopeId;
+  // 如果组件无render函数，则编译template模板，生成render函数
   if (isUndef(render)) {
     if (template) {
       var compiled = compileToFunctions(template, {
@@ -8642,6 +8647,7 @@ function createRenderFunction (
     done
   ) {
     warned = Object.create(null);
+    // 初始化一个上下文对象，内部有很多默认属性和方法
     var context = new RenderContext({
       activeInstance: component,
       userContext: userContext,
@@ -8649,7 +8655,9 @@ function createRenderFunction (
       isUnaryTag: isUnaryTag, modules: modules, directives: directives,
       cache: cache
     });
+    // 在组件实例的原型对象上新增 SSRHelper 的方法（通过extend方式）
     installSSRHelpers(component);
+    // 标准化render函数（即如果组件的render函数不存在，会自动解析template模板，然后转成render函数）
     normalizeRender(component);
 
     var resolve = function () {
@@ -8902,6 +8910,7 @@ var TemplateRenderer = function TemplateRenderer (options) {
   }
 };
 
+// 为context上下文绑定渲染 script/style/state 的函数
 TemplateRenderer.prototype.bindRenderFns = function bindRenderFns (context) {
   var renderer = this
   ;['ResourceHints', 'State', 'Scripts', 'Styles'].forEach(function (type) {
@@ -8911,7 +8920,7 @@ TemplateRenderer.prototype.bindRenderFns = function bindRenderFns (context) {
   context.getPreloadFiles = renderer.getPreloadFiles.bind(renderer, context);
 };
 
-// render synchronously given rendered app content and render context
+// 渲染同步给予渲染的应用程序内容和渲染上下文
 TemplateRenderer.prototype.render = function render (content, context) {
   var template = this.parsedTemplate;
   if (!template) {
@@ -9128,19 +9137,19 @@ function getPreloadType (ext) {
 
 
 
-
+// 创建渲染器
 function createRenderer (ref) {
   if ( ref === void 0 ) ref = {};
   var modules = ref.modules; if ( modules === void 0 ) modules = [];
   var directives = ref.directives; if ( directives === void 0 ) directives = {};
   var isUnaryTag = ref.isUnaryTag; if ( isUnaryTag === void 0 ) isUnaryTag = (function () { return false; });
-  var template = ref.template;
-  var inject = ref.inject;
+  var template = ref.template; // 模板
+  var inject = ref.inject; // 注入
   var cache = ref.cache;
-  var shouldPreload = ref.shouldPreload;
-  var shouldPrefetch = ref.shouldPrefetch;
+  var shouldPreload = ref.shouldPreload; // 是否使用 preload
+  var shouldPrefetch = ref.shouldPrefetch; // 是否使用 prefetch
   var clientManifest = ref.clientManifest;
-  var serializer = ref.serializer;
+  var serializer = ref.serializer; // 序列号生成器
 
   var render = createRenderFunction(modules, directives, isUnaryTag, cache);
   var templateRenderer = new TemplateRenderer({
@@ -9189,6 +9198,7 @@ function createRenderer (ref) {
           }
           if (template) {
             try {
+              // 根据模板渲染数据，最终得到拼接好的 字符串（HTML）
               var res = templateRenderer.render(result, context);
               if (typeof res !== 'string') {
                 // function template returning promise
